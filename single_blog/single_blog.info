@@ -1,0 +1,10 @@
+;$Id$
+ 
+name = Single blog
+description = Single blog module.
+package = Drupal 7 Development
+core = 7.x
+files[] = single_blog.module
+
+;dependencies[] = autoload
+;php = 5.2
