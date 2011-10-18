@@ -76,8 +76,8 @@ function single_blog_block_view($delta = '') {
         );
       }
       if (!empty($items)) {
-        // Theme the list of blog entries.
-       $block['content'] = array(
+      // Theme the list of blog entries.
+$block['content']['list'] = array(
   '#theme' => 'item_list__single_blog',
   '#items' => $items,
 );
