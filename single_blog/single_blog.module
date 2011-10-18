@@ -77,9 +77,16 @@ function single_blog_block_view($delta = '') {
       }
       if (!empty($items)) {
         // Theme the list of blog entries.
-        $block['content'] = array(
+       $block['content'] = array(
   '#theme' => 'item_list__single_blog',
   '#items' => $items,
+);
+
+// Add a link to the full list of blog entries.
+$block['content']['more'] = array(
+  '#theme' => 'more_link',
+  '#url' => 'blog',
+  '#title' => t('Read the latest blog entries.'),
 );
       }
     }
