@@ -27,9 +27,10 @@ function single_blog_list($number) {
     ->range(0, $number)
     ->addTag('node_access')
     ->execute();
-	
+
   return $query;
 }
+
 /**
  * Implements hook_block_info().
  */
@@ -38,8 +39,8 @@ function single_blog_block_info() {
   // The array key defines the $delta parameter used in all
   // other block hooks.
   $blocks['recent'] = array(
-    // The name of the block on the blocks administration page.
-    'info' => t('Recent blog posts'),
+  // The name of the block on the blocks administration page.
+  'info' => t('Recent blog posts'),
   );
   return $blocks;
 }
