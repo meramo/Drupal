@@ -110,7 +110,9 @@ function single_blog_item_list_child_render($elements) {
   }
   return $elements;
 }
-
+// Add a CSS file to style the block.
+$block['content']['#attached']['css'][] = drupal_get_path('module',
+                         'single_blog') . '/single-blog.css';
 
       }
     }
