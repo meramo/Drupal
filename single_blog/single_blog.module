@@ -67,18 +67,18 @@ function single_blog_block_view($delta = '') {
     if (user_access('access content')) {
       // Retrieve the most recent nodes.
       $result = single_blog_list(SINGLE_BLOG_LIST_COUNT);
+// Create links for each blog entry.
+$items = array();
+foreach ($result as $node) {
+  $items[] = array(
+    'data' => array(
+      '#theme' => 'single_blog_block_item',
+      '#node' => $node,
+    ),
+    'class' => array('node-' . $node->nid),
+  );
+}
 	  
-	        // Create links for each blog entry.
-      $items = array();
-      foreach ($result as $node) {
-        $items[] = array(
-          'data' => array(
-  '#type' => 'link',
-  '#title' => $node->title,
-  '#href' => 'node/' . $node->nid,
-),
-          'class' => array('node-' . $node->nid),
-        );
       }
       if (!empty($items)) {
       // Theme the list of blog entries.
