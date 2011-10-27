@@ -2,7 +2,7 @@
 // $Id$
 /**
  * @file 
- * Enables a single-user blog. Different kinds of experiments with hooks.
+ * Enables a single-user blog.
  */
 // Using the Form API 
 define('SINGLE_BLOG_NODE_TYPE', 'article');
@@ -14,7 +14,7 @@ define('SINGLE_BLOG_LIST_COUNT', 3);
  * @param $number
  *   The number of blog entries to return.
  * @return
- *   A result set object containing the list of blog entries.
+ *   A result set object containing the list of blog entries. In fact, it's just a simple API for the module.
  */
 function single_blog_list($number) {
   // Use the Database API to retrieve the data.
@@ -30,7 +30,6 @@ function single_blog_list($number) {
 
   return $query;
 }
-
 /**
  * Implements hook_block_info().
  */
@@ -39,8 +38,8 @@ function single_blog_block_info() {
   // The array key defines the $delta parameter used in all
   // other block hooks.
   $blocks['recent'] = array(
-  // The name of the block on the blocks administration page.
-  'info' => t('Recent blog posts'),
+    // The name of the block on the blocks administration page.
+    'info' => t('Recent blog posts'),
   );
   return $blocks;
 }
@@ -67,99 +66,56 @@ function single_blog_block_view($delta = '') {
     if (user_access('access content')) {
       // Retrieve the most recent nodes.
       $result = single_blog_list(SINGLE_BLOG_LIST_COUNT);
-// Create links for each blog entry.
-$items = array();
-foreach ($result as $node) {
-  $items[] = array(
-    'data' => array(
-      '#theme' => 'single_blog_block_item',
-      '#node' => $node,
-    ),
-    'class' => array('node-' . $node->nid),
-  );
-}
-	  
+
+	        // Create links for each blog entry.
+      $items = array();
+      foreach ($result as $node) {
+        $items[] = array(
+          'data' => array(
+  '#type' => 'link',
+  '#title' => $node->title,
+  '#href' => 'node/' . $node->nid,
+),
+          'class' => array('node-' . $node->nid),
+        );
       }
+      if (!empty($items)) {
+      // Theme the list of blog entries.
+$block['content']['list'] = array(
+  '#theme' => 'item_list__single_blog',
+  '#items' => $items,
+  '#pre_render' => array('single_blog_item_list_child_render'),
+);
 
-           if (!empty($items)) { 
-              // Theme the list of blog entries. 
-              $block['content']['list'] = array( 
-                '#theme' => 'item_list__single_blog', 
-                '#items' => $items, 
-                '#pre_render' => 
-                           array('single_blog_item_list_child_render'), 
-              ); 
-              // Add a link to the full list of blog entries. 
-              $block['content']['more'] = array( 
-                '#theme' => 'more_link', 
-                '#url' => 'blog', 
-                '#title' => t('Read the latest blog entries.'), 
-              ); 
-              // Add a CSS file to style the block. 
-              $block['content']['#attached']['css'][] = 
-           drupal_get_path('module', 'single_blog') . '/single-blog.css'; 
-           } 
-         } 
-      } 
+// Add a link to the full list of blog entries.
+$block['content']['more'] = array(
+  '#theme' => 'more_link',
+  '#url' => 'blog',
+  '#title' => t('Read the latest blog entries.'),
+);
 
-      return $block; 
-    } 
-	
+/**
+ * Render the child elements of theme_item_list() before its
+ * data is themed.
+ */
+function single_blog_item_list_child_render($elements) {
+  foreach (array_keys($elements['#items']) AS $key) {
+    // Take the renderable array that we set in 
+    // single_blog_block_view() and render it into the string
+    // that theme_item_list() expects.
+	    if (is_array($elements['#items'][$key]['data'])) {
+      $elements['#items'][$key]['data'] = 
+             drupal_render($elements['#items'][$key]['data']);
+    }
+  }
+  return $elements;
+}
+// Add a CSS file to style the block.
+$block['content']['#attached']['css'][] = drupal_get_path('module',
+                         'single_blog') . '/single-blog.css';
 
-    /** 
-     * Render the child elements of theme_item_list() before its data is 
-    themed. 
-     */ 
-    function single_blog_item_list_child_render($elements) { 
-      foreach (array_keys($elements['#items']) AS $key) { 
-         // Take the renderable array that we set in 
-		 
-     // single_blog_block_view() and render it into the string 
-     // that theme_item_list() expects. 
-     if (is_array($elements['#items'][$key]['data'])) { 
-       $elements['#items'][$key]['data'] = 
-               drupal_render($elements['#items'][$key]['data']); 
-     } 
-  } 
-  return $elements; 
-} 
-
-/** 
- * Implements hook_theme(). 
- */ 
-function single_blog_theme($existing, $type, $theme, $path) { 
-  return array( 
-     'single_blog_block_item' => array( 
-       'variables' => array( 
-          'node' => NULL, 
-       ), 
-       'template' => 'single-blog-block-item', 
-     ), 
-  ); 
-} 
-
-/** 
- * Preprocesses single blog block item variables. 
- */ 
-function template_preprocess_single_blog_block_item(&$variables) { 
-  $node = $variables['node']; 
-
-  // Create a renderable array for the title. 
-  $variables['title'] = array( 
-     '#type'    => 'link', 
-     '#title' => $node->title, 
-     '#href'    => 'node/' . $node->nid, 
-  ); 
-
-  // Format the creation date of the node. 
-  $variables['created'] = $node->created; 
-  $variables['date'] = format_date($node->created, 'custom', 
-                                           SINGLE_BLOG_DATE_FORMAT); 
-										   
-// Load the account object with the node's creator and store 
-       // in a variable for themer convenience. 
-       $variables['user'] = user_load($node->uid); 
-       // Theme the username. 
-       $variables['name'] = theme('username', array( 
-                                  'account' => $variables['user'])); 
-     } 
+      }
+    }
+  }
+  return $block;
+}
