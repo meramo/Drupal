@@ -5,6 +5,7 @@
  * Enables a single-user blog. Attempts to create a functioning module :)
  */
 // Using the Form API 
+
 define('SINGLE_BLOG_NODE_TYPE', 'article');
 define('SINGLE_BLOG_LIST_COUNT', 3);
 
@@ -67,20 +68,23 @@ function single_blog_block_view($delta = '') {
       // Retrieve the most recent nodes.
       $result = single_blog_list(SINGLE_BLOG_LIST_COUNT);
 
-	        // Create links for each blog entry.
-      $items = array();
-      foreach ($result as $node) {
-        $items[] = array(
-          'data' => array(
-  '#type' => 'link',
-  '#title' => $node->title,
-  '#href' => 'node/' . $node->nid,
-),
-          'class' => array('node-' . $node->nid),
-        );
-      }
-      if (!empty($items)) {
-      // Theme the list of blog entries.
+	        
+// Create links for each blog entry.
+  $items = array();
+  foreach ($result as $node) {
+  $items[] = array(
+  'data' => array(
+    '#type' => 'link',
+    '#title' => $node->title,
+    '#href' => 'node/' . $node->nid,
+  ),
+   'class' => array('node-' . $node->nid),
+  );
+}
+      
+if (!empty($items)) {
+     
+// Theme the list of blog entries.
 $block['content']['list'] = array(
   '#theme' => 'item_list__single_blog',
   '#items' => $items,
@@ -103,13 +107,14 @@ function single_blog_item_list_child_render($elements) {
     // Take the renderable array that we set in 
     // single_blog_block_view() and render it into the string
     // that theme_item_list() expects.
-	    if (is_array($elements['#items'][$key]['data'])) {
+    if (is_array($elements['#items'][$key]['data'])) {
       $elements['#items'][$key]['data'] = 
              drupal_render($elements['#items'][$key]['data']);
     }
   }
   return $elements;
 }
+
 // Add a CSS file to style the block.
 $block['content']['#attached']['css'][] = drupal_get_path('module',
                          'single_blog') . '/single-blog.css';
