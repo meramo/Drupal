@@ -2,7 +2,7 @@
 // $Id$
 /**
  * @file 
- * Enables a single-user blog.
+ * Enables a single-user blog. Attempts to create a functioning module :)
  */
 // Using the Form API 
 define('SINGLE_BLOG_NODE_TYPE', 'article');
