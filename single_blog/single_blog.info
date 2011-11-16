@@ -1,10 +1,9 @@
 ;$Id$
- 
-name = Single blog
-description = Single blog module.
-package = Drupal 7 Development
-core = 7.x
-files[] = single_blog.module
 
-;dependencies[] = autoload
-;php = 5.2
+name = Single blog
+description = Enables a single blog for an individual or multiple users.
+
+core = 7.x
+package = Drupal 7 Development
+
+files[] = single_blog.module
