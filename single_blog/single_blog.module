@@ -74,13 +74,27 @@ function single_blog_block_view($delta = '') {
   foreach ($result as $node) {
   $items[] = array(
   'data' => array(
-    '#type' => 'link',
-    '#title' => $node->title,
-    '#href' => 'node/' . $node->nid,
-  ),
+      '#theme' => 'single_blog_block_item',
+      '#node' => $node, 
+    ),
    'class' => array('node-' . $node->nid),
   );
 }
+
+/**
+  * Implements hook_theme().
+  */
+  function single_blog_theme($existing, $type, $theme, $path) {
+    return array(
+      'single_blog_block_item' => array(
+        'variables' => array(
+        'node' => NULL,
+        ),
+        'template' => 'single-blog-block-item',
+      ),
+    );  
+  }
+
       
 if (!empty($items)) {
      
