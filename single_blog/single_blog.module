@@ -3,11 +3,10 @@
 
 /**
  * @file
- * Enables a single blog for an individual or multiple users.
+ * Enables a single blog for an individual or multiple users. Not sure if it works though :)
  */
 
-// After you learn Form API in Chapter 5, you'll be able to
-// make these settings configurable.
+// Using Form API.
 define('SINGLE_BLOG_NODE_TYPE', 'article');
 define('SINGLE_BLOG_LIST_COUNT', 5);
 define('SINGLE_BLOG_DATE_FORMAT', 'F d, Y');
@@ -21,7 +20,7 @@ define('SINGLE_BLOG_DATE_FORMAT', 'F d, Y');
  *   A result set object containing the list of blog entries.
  */
 function single_blog_list($number) {
-  // Use the Database API to retrieve our data.
+  // Using the Database API to retrieve the data.
   // @see http://drupal.org/node/310069
   $query = db_select('node', 'n')
     ->fields('n', array('nid', 'title', 'created', 'uid'))
