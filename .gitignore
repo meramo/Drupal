@@ -32,13 +32,11 @@
 ehthumbs.db
 Icon?
 Thumbs.db
-..gitignore.un~
-.gitignore.swp
 
 # Folders #
 ######################
 .idea/
 *.un~*
-.gitignore.swp
+*.swp
 
 
