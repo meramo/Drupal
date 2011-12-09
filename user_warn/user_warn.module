@@ -1,46 +1,86 @@
 <?php // $Id$
-   /**
-    * @file
-    * User Warn module file
-    *
-    * This module allows site administrators to send a stock warning
-    * e-mail to a specified user or users through the admin interface.
-    * Administrators
-    * can configure the default e-mail including token replacement.
-    */
 
-   /**
-    * Implement hook_help().
-    */
-   function user_warn_help($path, $arg) {
-     if ($path == 'admin/help#user_warn') {
-       return t('User Warn allows site administrators to send a standard
-   e-mail to site users to notify them of improper behavior.');
-} }
+/**
+  * @file
+  * User Warn module file
+  *
+  * This module allows site administrators to send a stock warning
+  * e-mail to a specified user or users through the admin interface.
+  * Administrators
+  * can configure the default e-mail including token replacement.
+  */
 
- /**
-   * Implement hook_menu().
-   */
-   function user_warn_menu() {
-     $items = array();
-     $items['admin/config/people/user_warn'] = array(
-       'title' => 'User Warn',
-       'description' => 'Configuration for the User Warn module.',
-       'page callback' => 'drupal_get_form',
-       'page arguments' => array('user_warn_form'),
-       'access arguments' => array('administer users'),
-       'type' => MENU_NORMAL_ITEM,
-    );
+/**
+  * Implement hook_help().
+  */
+function user_warn_help($path, $arg) {
+  if ($path == 'admin/help#user_warn') {
+     return t('User Warn allows site administrators to send a standard
+               e-mail to site users to notify them of improper behavior.');
+  }
+}
 
-     $items['user/%/warn'] = array(
-       'title' => 'Warn',
-       'description' =>
-             'Send e-mail to a user about improper site behavior.',
-       'page callback' => 'drupal_get_form',
-       'page arguments' => array('user_warn_confirm_form', 1),
-       'access arguments' => array('administer users'),
-       'type' => MENU_LOCAL_TASK,
+/**
+  * Implement hook_menu().
+  */
+function user_warn_menu() {
+  $items = array();
+  $items['admin/config/people/user_warn'] = array(
+    'title' => 'User Warn',
+    'description' => 'Configuration for the User Warn module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_warn_form'),
+    'access arguments' => array('administer users'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+   $items['user/%/warn'] = array(
+     'title' => 'Warn',
+     'description' => 'Send e-mail to a user about improper site behavior.',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('user_warn_confirm_form', 1),
+     'access arguments' => array('administer users'),
+     'type' => MENU_LOCAL_TASK,
+   );
+ return $items;
+}
+
+/**
+  * Form builder; Create and display the User Warn configuration
+  * settings form.
+  */
+function user_warn_form($form, &$form_state) {
+  // Text field for the e-mail subject.
+  $form['user_warn_e-mail_subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Warning e-mail subject'),
+    '#description' => t('The subject of the e-mail which will be sent to users.'),
+    '#size' => 40,
+    '#maxlength' => 120,
+    '#required' => TRUE,
+  );
+
+  // Textarea for the body of the e-mail.
+  $form['user_warn_e-mail_text'] = array(
+    '#type' => 'textarea',
+    '#rows' => 10,
+    '#columns' => 40,
+    '#title' => t('Warning e-mail text'),
+    '#required' => TRUE,
+    '#description' => t('The text of the e-mail which will be sent to users.'),
 );
-     return $items;
-   }
 
+   // Checkbox to indicate if admin should be sent a Bcc on e-mails.
+   $form['user_warn_bcc'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('BCC admin on all e-mails'),
+     '#description' => t("Indicates whether the admin user (as set in site configuration) should be sent on all warning e-mails."),
+   );
+
+   // Submit button
+   $form['submit'] = array(
+     '#type' => 'submit',
+     '#value' => t('Save settings'),
+   );
+ return $form;
+}
