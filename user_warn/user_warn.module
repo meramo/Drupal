@@ -84,3 +84,21 @@ function user_warn_form($form, &$form_state) {
    );
  return $form;
 }
+
+/**
+  * Form builder; display the e-mail confirmation form.
+  */
+function user_warn_confirm_form($form, &$form_state, $uid) {
+  $form['account'] = array(
+    '#type' => 'value',
+    '#value' => user_load($uid),
+  );
+
+  return confirm_form(
+    $form,
+      t('Are you sure you want to send a warning e-mail to this user?'), 'user/' . $uid,
+      t('This action can not be undone.'),
+      t('Send e-mail'),
+      t('Cancel')
+  );
+}
