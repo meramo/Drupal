@@ -89,13 +89,7 @@ function user_warn_form($form, &$form_state) {
      '#title' => t('BCC admin on all e-mails'),
      '#description' => t("Indicates whether the admin user (as set in site configuration) should be sent on all warning e-mails."),
    );
-
-   // Submit button
-   $form['submit'] = array(
-     '#type' => 'submit',
-     '#value' => t('Save settings'),
-   );
- return $form;
+  return system_settings_form($form); // Adding submit button automatically. It gets the label 'Save settings'.
 }
 
 /**
@@ -114,4 +108,14 @@ function user_warn_confirm_form($form, &$form_state, $uid) {
       t('Send e-mail'),
       t('Cancel')
   );
+}
+
+ /**
+   * Save configuration settings for User Warn module.
+   */
+function user_warn_form_submit($form, &$form_state) {
+  variable_set('user_warn_e-mail_subject', $form_state['values']['user_warn_e-mail_subject']);
+  variable_set('user_warn_e-mail_text',   $form_state['values']['user_warn_e-mail_text']);
+  variable_set('user_warn_bcc',$form_state['values']['user_warn_bcc']);
+  drupal_set_message(t('The settings have been saved'));
 }
