@@ -49,10 +49,21 @@ function user_warn_menu() {
   * Form builder; Create and display the User Warn configuration
   * settings form.
   */
+
+define('USER_WARN_MAIL_TEXT',
+  'Hello,
+   We have been notified that you have posted comments on our site that
+   are in violation of our terms of service.  If this behavior continues
+   your account will be suspended.
+   Sincerely,
+   The administrative staff');
+
+
 function user_warn_form($form, &$form_state) {
   // Text field for the e-mail subject.
   $form['user_warn_e-mail_subject'] = array(
     '#type' => 'textfield',
+    '#default_value' => variable_get('user_warn_e-mail_subject', 'Administrative Warning'), // This property tells the form what data the element should contain when the form is first loaded.
     '#title' => t('Warning e-mail subject'),
     '#description' => t('The subject of the e-mail which will be sent to users.'),
     '#size' => 40,
@@ -63,6 +74,7 @@ function user_warn_form($form, &$form_state) {
   // Textarea for the body of the e-mail.
   $form['user_warn_e-mail_text'] = array(
     '#type' => 'textarea',
+    '#default_value' => variable_get('user_warn_e-mail_text', USER_WARN_MAIL_TEXT), // We used the defined variable
     '#rows' => 10,
     '#columns' => 40,
     '#title' => t('Warning e-mail text'),
@@ -73,6 +85,7 @@ function user_warn_form($form, &$form_state) {
    // Checkbox to indicate if admin should be sent a Bcc on e-mails.
    $form['user_warn_bcc'] = array(
      '#type' => 'checkbox',
+     '#default_value' => variable_get('user_warn_bcc', FALSE),
      '#title' => t('BCC admin on all e-mails'),
      '#description' => t("Indicates whether the admin user (as set in site configuration) should be sent on all warning e-mails."),
    );
