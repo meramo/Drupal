@@ -103,7 +103,9 @@ function user_warn_confirm_form($form, &$form_state, $uid) {
 
   return confirm_form(
     $form,
-      t('Are you sure you want to send a warning e-mail to this user?'), 'user/' . $uid,
+      t(
+      'Are you sure you want to send a warning e-mail to this user?'),
+      'user/' . $uid,
       t('This action can not be undone.'),
       t('Send e-mail'),
       t('Cancel')
