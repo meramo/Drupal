@@ -112,3 +112,40 @@ function user_warn_confirm_form($form, &$form_state, $uid) {
   );
 }
 
+/**
+  * Send a warning e-mail to the specified user.
+  */
+function user_warn_confirm_form_submit($form, &$form_state) {
+  $account = $form_state['values']['account'];
+    drupal_mail(
+      'user_warn',
+      'warn',
+      $account->mail,
+      user_preferred_language($account),
+      $form_state['values'],
+      variable_get('site_mail', NULL),
+      TRUE
+    );
+}
+
+/**
+  * Implement hook_mail().
+  */
+function user_warn_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'warn':
+      $account = $params['account'];
+      $subject = variable_get('user_warn_e-mail_subject',
+                                'Administrative Warning');
+      $body = variable_get('user_warn_e-mail_text',
+                             'You\'ve been warned!');
+        if (variable_get('user_warn_bcc', FALSE)) {
+          $admin_mail = variable_get('site_mail', NULL);
+          $message['headers']['bcc'] = $admin_mail;
+        }
+      $message['to'] = $account->mail;
+      $message['subject'] = $subject;
+      $message['body'][] = $body;
+    break;
+  }
+}
