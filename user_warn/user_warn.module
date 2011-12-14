@@ -49,14 +49,13 @@ function user_warn_menu() {
   * Form builder; Create and display the User Warn configuration
   * settings form.
   */
-
 define('USER_WARN_MAIL_TEXT',
-  'Hello,
-   We have been notified that you have posted comments on our site that
+  'Hello, [user:name]
+   We have been notified that you have posted comments on [site:name] that
    are in violation of our terms of service.  If this behavior continues
    your account will be suspended.
    Sincerely,
-   The administrative staff');
+   [site:name]');
 
 
 function user_warn_form($form, &$form_state) {
@@ -138,14 +137,14 @@ function user_warn_mail($key, &$message, $params) {
       $subject = variable_get('user_warn_e-mail_subject',
                                 'Administrative Warning');
       $body = variable_get('user_warn_e-mail_text',
-                             'You\'ve been warned!');
+                                    USER_WARN_MAIL_TEXT);
         if (variable_get('user_warn_bcc', FALSE)) {
           $admin_mail = variable_get('site_mail', NULL);
           $message['headers']['bcc'] = $admin_mail;
         }
       $message['to'] = $account->mail;
       $message['subject'] = $subject;
-      $message['body'][] = $body;
+      $message['body'][] = token_replace($body, array('user' => $account));
     break;
   }
 }
