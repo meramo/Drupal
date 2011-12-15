@@ -1,4 +1,3 @@
-<?php
 function artwork_schema() {
   $schema['artwork'] = array(
     'description' => 'The base table for artworks.',
