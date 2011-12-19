@@ -1,0 +1,75 @@
+<?php
+
+/**
+  * Implements hook_entity_info().
+  */
+function artwork_entity_info() {
+  $return['artwork'] = array(
+    'label' => t('Artwork'),
+    'controller class' => 'ArtworkController',
+    'base table' => 'artwork',
+    'revision table' => 'artwork_revision',
+    'uri callback' => 'artwork_uri',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'aid',
+      'revision' => 'vid',
+      'bundle' => 'type',
+      'label' => 'title',
+    ),
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    'static cache' => TRUE,
+    'bundles' => array(),
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ),
+       'teaser' => array(
+         'label' => t('Teaser'),
+         'custom settings' => FALSE,
+       ),
+    ),
+  );
+
+  foreach (artwork_types() as $type => $info) {
+     $return['artwork']['bundles'][$type] = array(
+       'label' => $info->name,
+       'admin' => array(
+       'path' => 'admin/structure/artworks/manage/%artwork_type',
+       'real path' => 'admin/structure/artworks/manage/' .
+                      str_replace('_', '-', $type),
+       'bundle argument' => 4, // Remember that menu arguments are 0-based, so index 4 is the fifth part of the path, which here is %artwork_type
+       'access arguments' => array('administer artworks'),
+       ),
+     );
+  }
+
+  return $return;
+}
+
+function artwork_types() {
+  $types = &drupal_static(__FUNCTION__); // Acts as a central collector for static variables
+    if (empty($types)) {
+      $types['painting'] = (object)array(
+        'type' => 'painting',
+        'name' => t('Painting'),
+        'description' => t('A picture made with paint.')
+      );
+      $types['sculpture'] = (object)array(
+        'type' => 'sculpture',
+        'name' => t('Sculpture'),
+        'description' => t('A carving made out of stone or wood.')
+      );
+    }
+
+   return $types;
+}
+// Necessary for the menu placeholder to work, also provides an API
+function artwork_type_load($type) {
+  $types = artwork_types();
+  $type = str_replace('-', '_', $type);
+  return isset($types[$type]) ? $types[$type] : FALSE;
+}
