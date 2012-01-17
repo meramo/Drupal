@@ -65,11 +65,56 @@ function artwork_types() {
       );
     }
 
-   return $types;
+  return $types;
 }
 // Necessary for the menu placeholder to work, also provides an API
 function artwork_type_load($type) {
   $types = artwork_types();
   $type = str_replace('-', '_', $type);
   return isset($types[$type]) ? $types[$type] : FALSE;
+}
+
+// Implements hook_menu()
+function artwork_menu() {
+  $items['admin/structure/artworks'] = array(
+    'title' => 'Manage artworks',
+    'description' => 'Manage artworks.',
+    'page callback' => 'artwork_overview_types',
+    'access arguments' => array('administer artworks'),
+  );
+  $items['admin/structure/artworks/manage/%artwork_type'] = array(
+    'title' => 'View artwork type',
+    'title callback' => 'artwork_type_page_title',
+    'title arguments' => array(4),
+    'page callback' => 'artwork_information',
+    'page arguments' => array(4),
+    'access arguments' => array('administer artworks'),
+  );
+  $items['admin/structure/artworks/manage/%artwork_type/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+// Provides an unordered list of all of the artwork types
+function artwork_overview_types() {
+  foreach (artwork_types() as $type => $info) {
+    $type_url_str = str_replace('_', '-', $type);
+    $label = t('View @type', array('@type' => $info->name));
+    $items[] = l($label, 'admin/structure/artworks/manage/' . $type_url_str);
+  }
+
+  return theme('item_list', array('items' => $items));
+}
+
+// Converts the artwork type into page title
+function artwork_type_page_title($type) {
+  return t('Manage @type', array('@type' => $type->name));
+}
+
+// Provides artwork type description for admin page
+function artwork_information($artwork_type) {
+  return $artwork_type->name . ': ' . $artwork_type->description;
 }
