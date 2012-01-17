@@ -38,9 +38,9 @@ function artwork_schema() {
        ),
        'changed' => array(
           'description' => 'The Unix timestamp when the artwork was most recently saved.',
-           'type' => 'int',
-           'not null' => TRUE,
-           'default' => 0,
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
        ),
      ),
      'unique keys' => array(

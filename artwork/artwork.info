@@ -3,3 +3,5 @@ description = Artwork.
 package = Drupal 7 Development
 core = 7.x
 dependencies[] = block
+
+files[] = artwork.controller.inc
