@@ -118,3 +118,119 @@ function artwork_type_page_title($type) {
 function artwork_information($artwork_type) {
   return $artwork_type->name . ': ' . $artwork_type->description;
 }
+
+// Creates artworks adding interface
+function artwork_menu() {
+  $items['artwork/add'] = array(
+    'title' => 'Add new artwork',
+    'page callback' => 'artwork_add_page',
+    'access arguments' => array('create artworks'),
+      'weight' => 1,
+      'menu_name' => 'management',
+      'file' => 'artwork.pages.inc',
+  );
+  foreach (artwork_types() as $type) {
+    $type_url_str = str_replace('_', '-', $type->type);
+      $items['artwork/add/' . $type_url_str] = array(
+        'title' => $type->name,
+        'title callback' => 'check_plain', // check_plain() will take whatever is specified in the title and escape any and all HTML in it, making it safe to use as the page title
+        'page callback' => 'artwork_add',
+        'page arguments' => array(2),
+        'access arguments' => array('create artwork'),
+        'description' => $type->description,
+      );
+  }
+
+  return $items;
+}
+
+// Creates the listing page
+function artwork_add_page() {
+  $item = menu_get_item(); // Returns the current menu item
+  $links = system_admin_menu_block($item); // General purpose function for getting the children of an arbitrary menu item
+  foreach ($links as $link) {
+    $items[] = l($link['title'], $link['href'],$item['localized_options'])
+      . ': ' . filter_xss_admin($link['description']);
+  }
+
+  return theme('item_list', array('items' => $items));
+}
+
+// Creates the artwork adding form
+function artwork_add($type) {
+  global $user;
+  $types = artwork_types();
+  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
+    if (empty($types[$type])) {
+      return MENU_NOT_FOUND;
+    }
+  $artwork = entity_get_controller('artwork')->create($type);
+  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
+
+  return drupal_get_form($type . '_artwork_form', $artwork);
+}
+
+// Dynamically defines forms for each artwork type
+function artwork_forms() {
+  $forms = array();
+    if ($types = artwork_types()) {
+      foreach (array_keys($types) as $type) {
+        $forms[$type . '_artwork_form']['callback'] = 'artwork_form';
+      }
+    }
+
+  return $forms;
+}
+// Builds the actual form with Form API
+function artwork_form($form, &$form_state, $artwork) {
+  // Set the id to identify this as an artwork edit form.
+  $form['#id'] = 'artwork-form';
+  // Save the artwork for later, in case we need it.
+  $form['#artwork'] = $artwork;
+  $form_state['artwork'] = $artwork;
+  // Common fields. We don't have many.
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => $artwork->title,
+    '#weight' => -5,
+    '#required' => TRUE,
+  );
+  $form['revision'] = array(
+    '#access' => user_access('administer artworks'),
+    '#type' => 'checkbox',
+    '#title' => t('Create new revision'),
+    '#default_value' => 0,
+  );
+  // Add the buttons.
+  $form['buttons'] = array();
+  $form['buttons']['#weight'] = 100;
+  $form['buttons']['submit'] = array(
+     '#type' => 'submit',
+     '#value' => t('Save'),
+     '#weight' => 5,
+     '#submit' => array('artwork_form_submit'),
+   );
+  if (!empty($artwork->aid)) {  //  If we're editing an existing artwork
+    $form['buttons']['delete'] = array(
+      '#access' => user_access('delete artworks'),
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('artwork_form_delete_submit'),
+    );
+  }
+  $form['#validate'][] = 'artwork_form_validate';
+    // Passes the form off to the Field system so that any fields we've added to this artwork type can be added to the form
+    field_attach_form('artwork', $artwork, $form, $form_state);
+
+  return $form;
+}
+
+// Validates the form and fields
+function artwork_form_validate($form, &$form_state) {
+  $artwork = $form_state['artwork'];
+  // Field validation.
+  field_attach_form_validate('artwork', $artwork, $form, $form_state);
+}
+
