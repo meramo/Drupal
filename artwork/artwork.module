@@ -234,3 +234,30 @@ function artwork_form_validate($form, &$form_state) {
   field_attach_form_validate('artwork', $artwork, $form, $form_state);
 }
 
+// Implements the submit callback
+function artwork_form_submit($form, &$form_state) { // Pull the old artwork object out of the $form_state variable
+  global $user;
+  $artwork = &$form_state['artwork'];
+  // Set the artwork's uid if it's being created at this time.
+  if (empty($artwork->uid)) {
+    $artwork->uid = $user->uid; // Set its user
+  }
+  $artwork->title = $form_state['values']['title'];
+  $artwork->revision = $form_state['values']['revision'];
+  // Notify field widgets.
+  field_attach_submit('artwork', $artwork, $form, $form_state);
+  // Save the artwork.
+  artwork_save($artwork);
+  // Notify the user.
+  drupal_set_message(t('Artwork saved.'));
+  $form_state['redirect'] = 'artwork/' . $artwork->aid;
+}
+
+function artwork_save($artwork) {
+  return entity_get_controller('artwork')->save($artwork);
+}
+
+
+
+
+
