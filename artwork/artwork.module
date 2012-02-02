@@ -9,7 +9,7 @@ function artwork_entity_info() {
     'controller class' => 'ArtworkController',
     'base table' => 'artwork',
     'revision table' => 'artwork_revision',
-    'uri callback' => 'artwork_uri',
+    'uri callback' => 'artwork_uri', // A function taking an entity as argument and returning the uri elements of the entity, e.g. 'path' and 'options'. 
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'aid',
