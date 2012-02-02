@@ -1,4 +1,5 @@
 <?php
+
 function artwork_schema() {
   $schema['artwork'] = array(
     'description' => 'The base table for artworks.',
@@ -10,46 +11,46 @@ function artwork_schema() {
         'not null' => TRUE,
       ),
       'vid' => array(
-         'description' => 'The current {artwork_revision}.vid version identifier.',
-         'type' => 'int',
-         'unsigned' => TRUE,
-         'not null' => TRUE,
-         'default' => 0,
-       ),
-      'type' => array(
-         'description' => 'The {artwork_type} of this artwork.',
-         'type' => 'varchar',
-         'length' => 32,
-         'not null' => TRUE,
-         'default' => '',
-       ),
-       'title' => array(
-         'description' => 'The title of this artwork.',
-         'type' => 'varchar',
-         'length' => 255,
-         'not null' => TRUE,
-         'default' => '',
-       ),
-       'created' => array(
-         'description' => 'The Unix timestamp when the artwork was created.',
-         'type' => 'int',
-         'not null' => TRUE,
-         'default' => 0,
-       ),
-       'changed' => array(
-          'description' => 'The Unix timestamp when the artwork was most recently saved.',
-          'type' => 'int',
-          'not null' => TRUE,
-          'default' => 0,
-       ),
-     ),
-     'unique keys' => array(
-       'aid_vid' => array('aid', 'vid'),
-       'aid'     => array('aid')
+        'description' => 'The current {artwork_revision}.vid version identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
-       'primary key' => array('aid'),
-  );
+      'type' => array(
+        'description' => 'The {artwork_type} of this artwork.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The title of this artwork.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the artwork was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the artwork was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
 
+    ),
+    'unique keys' => array(
+      'aid_vid' => array('aid', 'vid'),
+      'aid'     => array('aid')
+      ),
+    'primary key' => array('aid'),
+  );
 
   $schema['artwork_revision'] = array(
     'description' => 'Stores information about each saved version of an {artwork}.',
@@ -94,7 +95,6 @@ function artwork_schema() {
       ),
     ),
   );
-
 
   return $schema;
 }
