@@ -9,7 +9,7 @@ function artwork_entity_info() {
     'controller class' => 'ArtworkController',
     'base table' => 'artwork',
     'revision table' => 'artwork_revision',
-    'uri callback' => 'artwork_uri', // A function taking an entity as argument and returning the uri elements of the entity, e.g. 'path' and 'options'. 
+    'uri callback' => 'artwork_uri', // A function taking an entity as argument and returning the uri elements of the entity, e.g. 'path' and 'options'.
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'aid',
@@ -59,7 +59,7 @@ function artwork_uri($artwork) {
 }
 
 /**
- * Implements hook_fied_extra_fields().
+ * Implements hook_field_extra_fields(). Exposes "pseudo-field" components on fieldable entities.
  */
 function artwork_field_extra_fields() {
   $extra = array();
