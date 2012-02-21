@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Implements hook_field_info().
+ */
+function dimfield_field_info() {
+  return array(
+    'dimensions' => array(
+      'label' => t('Dimensions'),
+      'description' => t('This field stores a height and width, and possibly depth.'),
+      'settings' => array('num_dimensions' => 2), // These settings are fixed and after we create an instance of a field cannot be changed
+      'instance_settings' => array( // Can be changed after a field has been created
+        'max_height' => 0,
+        'max_width' => 0,
+        'max_depth' => 0,
+      ),
+      'default_widget' => 'dimfield_combined',
+      'default_formatter' => 'dimfield_default',
+    ),
+  );
+}
