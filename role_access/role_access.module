@@ -1,0 +1,241 @@
+<?php
+
+// $Id$
+
+/**
+ * @file
+ * Role access module file.
+ *
+ * Provides a simple content access scheme based on the
+ * author's role.
+ */
+
+/**
+ * Implement hook_permission().
+ *
+ * Define our modules permissions as follows:
+ *  -- view role access content
+ *  -- update role access content
+ *  -- delete role access content
+ *
+ * Naming these properly helps avoid conflicts with other modules.
+ * Note that we name these based on the $op value passed by
+ * hook_node_grants(). This allows us to use string concatenation
+ * when doing our access check.
+ */ 
+function role_access_permission() {
+  return array(
+    'view role access content' =>  array(
+      'title' => t('View role-restricted content'),
+      'description' => t('Allow users to view content assigned by role.'),
+    ),
+    'update role access content' =>  array(
+      'title' => t('Edit role-restricted content'),
+      'description' => t('Allow users to edit content assigned by role.'),
+    ),
+    'delete role access content' =>  array(
+      'title' => t('Delete role-restricted content'),
+      'description' => t('Allow users to delete content assigned by role.'),
+    ),
+  );
+}
+
+/**
+ * Implement hook_node_access_records().
+ *
+ * This function is the heart of node access control in Drupal.
+ * Here, we tell the database what information to store in the
+ * {node_access} table.
+ *
+ * In this case, we want to store a row for each role assigned
+ * to the author of the content.
+ *
+ */
+function role_access_node_access_records($node) {
+  // First get the user record. Note that we avoid using $user here,
+  // since that is the global $user object.
+  $account = user_load($node->uid);
+
+  // Error checking.
+  if (empty($account)) {
+    drupal_set_message(t('Error message'));
+    return array();
+  }
+
+  // Now, get the roles array from the $account object.
+  $roles = array_keys($account->roles);
+
+  // Error checking.
+  if (empty($roles)) {
+    drupal_set_message(t('Error message'));
+    return array();
+  }
+
+  // Initialize a $grants array.
+  $grants = array();
+
+  // Iterate through the $roles and get our grants.
+  // We use the role id as the grant id, so let's name it that way.
+  foreach ($roles as $grant_id) {
+    $grants[] = array(
+      'realm' => 'role_access', // The name of our module.
+      'gid' => $grant_id,
+      'grant_view' => TRUE,
+      'grant_update' => TRUE,
+      'grant_delete' => TRUE,
+      'priority' => 0, // If not zero, other grants are ignored.
+    );
+  }
+  // Return our grants.
+  return $grants;
+}
+
+/****
+  Now, notice that if we save a node here, nothing happens.
+
+  Why??
+
+   Because the Node Access API assumes that your module
+   also implements hook_node_grants(). Without that hook,
+   your records will not be stored.
+****/
+
+/**
+ * Implement hook_node_grants().
+ *
+ * For each page load, Drupal asks what permissions the current
+ * user has. We respond with hook_node_grants(). This hook
+ * fires three times, for the 'view', 'edit', and 'delete' operations.
+ *
+ * Here we check our user's roles and permissions to see what
+ * grants we should provide.
+ *
+ * These grants _must_ match those provided in hook_node_access_records(),
+ * otherwise, the grants will fail.
+ *
+ */
+function role_access_node_grants($account, $op) {
+  // Get the user roles.
+  $roles = array_keys($account->roles);
+
+  // Error checking.
+  if (empty($roles)) {
+    drupal_set_message(t('Error message'));
+    return array();
+  }
+
+  // Initialize a $grants array.
+  $grants = array();
+
+  // Iterate through the roles.
+  foreach ($roles as $grant_id) {
+    // Check the permission callback!
+    if (user_access($op . ' role access content')) {
+      $grants['role_access'][] = $grant_id;
+    }
+  }
+
+  // Return the grants.
+  return $grants;
+}
+
+/****
+ IMPORTANT
+ 
+ At this point, you would expect your module to work correctly, but
+ it will not. That is because Drupal's code registry means that
+ the node access hooks must be present when the module is
+ enabled.
+ 
+ So go to the modules page, disable the module and re-enable it.
+
+  You should see a message:
+    The content access permissions need to be rebuilt. Please visit this page.
+
+****/
+
+/**
+ * Implement hook_node_access_explain().
+ *
+ * This is an internal developer hook for the Devel module.
+ *  http://drupal.org/project/devel
+ * Providing this hook helps debug node access rules for your site.
+ */
+function role_access_node_access_explain($row) {
+  // If not our grant, ignore.
+  if ($row->realm != 'role_access') {
+    return NULL;
+  }
+  // Get a list of user roles.
+  $roles = user_roles();
+  // Get our permission definitions.
+  $permissions = role_access_permission();
+
+  // Initiate a results variable, for theming the output.
+  $results = array();
+  // Check each access rule.
+  foreach (array('view', 'update', 'delete') as $op) {
+    if (in_array($row->gid, array_keys($roles))) {
+      $results[] = t('%roles with the permission %perm may %op this content', array('%role' => $roles[$row->gid], '%perm' => $permissions[$op . ' role access content']['title'], '%op' => $op));
+    }
+  }
+  // Prepare for theming. The $results are already secure, having run
+  // through t().
+  $variables = array(
+    'items' => $results,
+    'title' => '',
+    'type' => 'ul',
+  );
+  // Return a nicely themed list.
+  return theme('item_list', $variables);
+}
+
+/****
+ Our modules is now finished and fully functional.
+ However, it does create one glaring problem, which is
+ based on how Drupal handles content and roles.
+
+ We very likely want anonymous users to be able to View
+ most content; further, all custom user roles are also
+ "authenticated users" even if they don't have that role
+ assigned explictly.
+ 
+ So we have to decide how we want to handle these two
+ cases. In Drupal we have two basic options:
+ 
+ 1) We can create a permission.
+ 2) We can create a module setting.
+ 
+ Let's try both, and see which works best.
+ 
+ First, let's define our exceptions:
+ 
+  -- View nodes as authenticated user.
+
+This is a good definition, since it could handle both cases
+for us. If anonymous user, this means, yes, let's add more
+view permissions. If a custom role, the lack of this permission
+would mean, no, don't treat me like an authenticated user,
+just show my role information.
+
+We could, of course, also add the Edit and Delete permissions
+here, but for now, we won't do that.
+
+Since this is the only option, it seems that a permission is the
+best solution. No need to create a new user facing admin screen
+just to toggle one option.
+
+Note: we could enforce more complex rules with a submodule,
+using hook_node_grants_alter(), so maybe that is the best approach.
+After all, we are altering the core module behavior.
+
+****/
+
+
+/****
+  TODO LIST
+  
+  -- If roles change, we have to rebuild permissions, so watch for that.
+
+****/
+

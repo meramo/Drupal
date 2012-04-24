@@ -1,0 +1,7 @@
+; $Id$
+name = Role Access Extend
+description = Provides additional options for Role Access.
+core = 7.x
+dependencies[] = role_access
+files[] = role_access_extend.module
+

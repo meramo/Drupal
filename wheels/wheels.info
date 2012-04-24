@@ -1,0 +1,10 @@
+name = Машина
+description = Модуль для имплементации машины через Entity API.
+package = Other
+version = VERSION
+core = 7.x
+
+dependencies[] = entity
+dependencies[] = views
+
+files[] = wheels.controller.inc

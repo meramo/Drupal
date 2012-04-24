@@ -1,0 +1,16 @@
+<?php
+/**
+ * Implement hook_node_access().
+ *
+ * Only allow posts by users with accounts more than two days old.
+ */
+function delay_node_access($node, $op, $account) {
+  if ($op != 'create' || $node != 'article') {
+    return NODE_ACCESS_IGNORE;
+  }
+  // Drupal stores the page request in the constant REQUEST_TIME.
+  if (empty($account->created) || $account->created > (REQUEST_TIME - (48 * 3600))) {
+    return NODE_ACCESS_DENY;
+  }
+  return NODE_ACCESS_IGNORE;
+}

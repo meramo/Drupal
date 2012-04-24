@@ -1,0 +1,5 @@
+; $Id$
+name = Role Access
+description = Limit content access by user role.
+core = 7.x
+files[] = role_access.module

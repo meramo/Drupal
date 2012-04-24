@@ -1,0 +1,6 @@
+; $Id$
+name = Delay
+description = Delay posting until a user has been a member for two days.
+version = 1.0
+core = 7.x
+files[] = delay.module

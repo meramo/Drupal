@@ -1,0 +1,23 @@
+<?php
+/**
+ * Implement hook_node_access().
+ *
+ * Allow users to edit all nodes created by their peers.
+ */
+function role_edit_node_access($node, $op, $account) {
+  if ($op != 'update') {
+    return NODE_ACCESS_IGNORE;
+  }
+  if ($account->uid == $node->uid) {
+    return NODE_ACCESS_ALLOW;
+  }
+  $owners = &drupal_static(__FUNCTION__);
+  if (!isset($owners[$node->uid])) {
+    $owners[$node->uid] = user_load($node->uid);
+  }
+  $diff = array_diff($account->roles, $owners[$node->uid]->roles);
+  if (empty($diff)) {
+    return NODE_ACCESS_ALLOW;
+  }
+  return NODE_ACCESS_DENY;
+}

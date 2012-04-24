@@ -1,0 +1,345 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function wheels_entity_info() {
+  $return = array(
+    'wheels' => array(
+      'label' => t('Wheels'),
+      'entity class' => 'Wheels',
+      'controller class' => 'WheelsController',
+      'base table' => 'wheels',
+      'fieldable' => TRUE,
+      'entity keys' => array(
+        'id' => 'wid',
+        'bundle' => 'type',
+      ),
+      'bundle keys' => array(
+        'bundle' => 'type',
+      ),
+      'bundles' => array(),
+      'load hook' => 'wheels_load',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Default'),
+          'custom settings' => FALSE,
+        ),
+      ),
+      'label callback' => 'entity_class_label',
+      'uri callback' => 'entity_class_uri',
+      'module' => 'wheels',
+      'access callback' => 'wheels_access',
+    ),
+  );
+  $return['wheels_type'] = array(
+    'label' => t('Wheels Type'),
+    'entity class' => 'WheelsType',
+    'controller class' => 'WheelsTypeController',
+    'base table' => 'wheels_type',
+    'fieldable' => FALSE,
+    'bundle of' => 'wheels',
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'id',
+      'name' => 'type',
+      'label' => 'label',
+    ),
+    'module' => 'wheels',
+    // Enable the entity API's admin UI.
+    'admin ui' => array(
+      'path' => 'admin/structure/wheels-types',
+      'file' => 'wheels.admin.inc',
+      'controller class' => 'WheelsTypeUIController',
+    ),
+    'access callback' => 'wheels_type_access',
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function wheels_entity_info_alter(&$entity_info) {
+  foreach (wheels_types() as $type => $info) {
+    $entity_info['wheels']['bundles'][$type] = array(
+      'label' => $info->label,
+      'admin' => array(
+        'path' => 'admin/structure/wheels-types/manage/%wheels_type',
+        'real path' => 'admin/structure/wheels-types/manage/' . $type,
+        'bundle argument' => 4,
+      ),
+    );
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function wheels_menu() {
+  $items = array();
+
+  $items['wheels/add'] = array(
+    'title' => 'Add wheels',
+    'page callback' => 'wheels_admin_add_page',
+    'access arguments' => array('administer wheels entities'),
+    'file' => 'wheels.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+    'tab_parent' => 'wheels',
+    'tab_root' => 'wheels',
+  );
+
+  $wheels_uri = 'wheels/%wheels';
+  $wheels_uri_argument_position = 1;
+
+  $items[$wheels_uri] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('wheels', $wheels_uri_argument_position),
+    'page callback' => 'wheels_view',
+    'page arguments' => array($wheels_uri_argument_position),
+    'access callback' => 'entity_access',
+    'access arguments' => array('view', 'wheels', $wheels_uri_argument_position),
+    'file' => 'wheels.pages.inc',
+  );
+
+  $items[$wheels_uri . '/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items[$wheels_uri . '/delete'] = array(
+    'title' => 'Delete wheels',
+    'title callback' => 'wheels_label',
+    'title arguments' => array($wheels_uri_argument_position),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wheels_delete_form', $wheels_uri_argument_position),
+    'access callback' => 'entity_access',
+    'access arguments' => array('edit', 'wheels', $wheels_uri_argument_position),
+    'file' => 'wheels.admin.inc',
+  );
+
+  $items[$wheels_uri . '/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wheels_form', $wheels_uri_argument_position),
+    'access callback' => 'entity_access',
+    'access arguments' => array('edit', 'wheels', $wheels_uri_argument_position),
+    'file' => 'wheels.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+
+  foreach (wheels_types() as $type => $info) {
+    $items['wheels/add/' . $type] = array(
+      'title' => 'Add wheels',
+      'page callback' => 'wheels_add',
+      'page arguments' => array(2),
+      'access callback' => 'entity_access',
+      'access arguments' => array('create', 'wheels', $type),
+      'file' => 'wheels.admin.inc',
+    );
+  }
+
+  $items['admin/structure/wheels-types/%wheels_type/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wheels_type_form_delete_confirm', 4),
+    'access arguments' => array('administer wheels types'),
+    'weight' => 1,
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'wheels.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function wheels_permission() {
+  $permissions = array(
+    'administer wheels types' => array(
+      'title' => t('Administer wheels types'),
+      'description' => t('Allows users to configure wheels types and their fields.'),
+      'restrict access' => TRUE,
+    ),
+    'create wheels entities' => array(
+      'title' => t('Create wheels'),
+      'description' => t('Allows users to create wheels.'),
+      'restrict access' => TRUE,
+    ),
+    'view wheels entities' => array(
+      'title' => t('View wheels'),
+      'description' => t('Allows users to view wheels.'),
+      'restrict access' => TRUE,
+    ),
+    'edit any wheels entities' => array(
+      'title' => t('Edit any wheels'),
+      'description' => t('Allows users to edit any wheels.'),
+      'restrict access' => TRUE,
+    ),
+    'edit own wheels entities' => array(
+      'title' => t('Edit own wheels'),
+      'description' => t('Allows users to edit own wheels.'),
+      'restrict access' => TRUE,
+    ),
+  );
+
+  return $permissions;
+}
+
+
+/**
+ * Implements hook_entity_property_info_alter().
+ */
+function wheels_entity_property_info_alter(&$info) {
+  $properties = &$info['wheels']['properties'];
+  $properties['created'] = array(
+    'label' => t("Date created"),
+    'type' => 'date',
+    'description' => t("The date the node was posted."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer nodes',
+    'schema field' => 'created',
+  );
+  $properties['changed'] = array(
+    'label' => t("Date changed"),
+    'type' => 'date',
+    'schema field' => 'changed',
+    'description' => t("The date the node was most recently updated."),
+  );
+  $properties['uid'] = array(
+    'label' => t("Author"),
+    'type' => 'user',
+    'description' => t("The author of the wheels."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer wheels entities',
+    'required' => TRUE,
+    'schema field' => 'uid',
+  );
+}
+
+
+/*******************************************************************************
+ ********************************* Wheels API's **********************************
+ ******************************************************************************/
+
+/**
+ * Access callback for wheels.
+ */
+function wheels_access($op, $wheels, $account = NULL, $entity_type = NULL) {
+  global $user;
+
+  if (!isset($account)) {
+    $account = $user;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('administer wheels entities', $account)
+          || user_access('create wheels entities', $account);
+    case 'view':
+      return user_access('administer wheels entities', $account)
+          || user_access('view wheels entities', $account);
+    case 'edit':
+      return user_access('administer wheels entities')
+          || user_access('edit any wheels entities')
+          || (user_access('edit own wheels entities') && ($wheels->uid == $account->uid));
+  }
+}
+
+/**
+ * Load a wheels.
+ */
+function wheels_load($wid, $reset = FALSE) {
+  $wheels = wheels_load_multiple(array($wid), array(), $reset);
+  return reset($wheels);
+}
+
+/**
+ * Load multiple wheels based on certain conditions.
+ */
+function wheels_load_multiple($wids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('wheels', $wids, $conditions, $reset);
+}
+
+/**
+ * Save wheels.
+ */
+function wheels_save($wheels) {
+  entity_save('wheels', $wheels);
+}
+
+/**
+ * Delete single wheels.
+ */
+function wheels_delete($wheels) {
+  entity_delete('wheels', entity_id('wheels' ,$wheels));
+}
+
+/**
+ * Delete multiple wheels.
+ */
+function wheels_delete_multiple($wheels_ids) {
+  entity_delete_multiple('wheels', $wheels_ids);
+}
+
+
+/*******************************************************************************
+ ****************************** Wheels Type API's ********************************
+ ******************************************************************************/
+
+/**
+ * Access callback for wheels Type.
+ */
+function wheels_type_access($op, $entity = NULL) {
+  return user_access('administer wheels types');
+}
+
+/**
+ * Load wheels Type.
+ */
+function wheels_type_load($wheels_type) {
+  return wheels_types($wheels_type);
+}
+
+/**
+ * List of wheels Types.
+ */
+function wheels_types($type_name = NULL) {
+  $types = entity_load_multiple_by_name('wheels_type', isset($type_name) ? array($type_name) : FALSE);
+  return isset($type_name) ? reset($types) : $types;
+}
+
+/**
+ * Save wheels type entity.
+ */
+function wheels_type_save($wheels_type) {
+  entity_save('wheels_type', $wheels_type);
+}
+
+/**
+ * Delete single case type.
+ */
+function wheels_type_delete($wheels_type) {
+  entity_delete('wheels_type', entity_id('wheels_type' ,$wheels_type));
+}
+
+/**
+ * Delete multiple case types.
+ */
+function wheels_type_delete_multiple($wheels_type_ids) {
+  entity_delete_multiple('wheels_type', $wheels_type_ids);
+}
+
+/**
+  * Implements hook_views_api().
+  */
+function wheels_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'wheels'),
+  );
+}
+

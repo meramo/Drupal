@@ -1,0 +1,6 @@
+; $Id$
+name = Role edit
+description = Allows users to edit all nodes created by their peers.
+version = 1.0
+core = 7.x
+files[] = role_edit.module

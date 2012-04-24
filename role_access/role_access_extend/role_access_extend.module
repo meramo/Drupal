@@ -1,0 +1,121 @@
+<?php
+
+// $Id$
+
+/**
+ * @file
+ * Role Access Extend
+ * Additional configuration options for Role Access.
+ */
+
+/**
+ * Implement hook_permission().
+ */
+function role_access_extend_permission() {
+  return array(
+    'view role access as authenticated user' =>  array(
+      'title' => t('View role-restricted content as authenticated user'),
+      'description' => t('Allow anonymous users to view content created by authenticated users. Lack of this permission removes access for users in custom roles.'),
+    ),
+    'assign role access as authenticated user' =>  array(
+      'title' => t('Save role-restricted content as authenticated user'),
+      'description' => t('Save new and updated content so that authenticated users have permissions. <em>Normally this is set to off.</em>'),
+    ),
+  );
+}
+
+/****
+
+When using alter hooks, we must decide: Should I alter
+what is saved in the database {node_access} or should I
+alter the data that interacts with the stored data?
+
+Since we might want to turn this module off, I think the
+best solution is to leave {node_access} alone and instead
+alter the grants on page load. we do this with the new Drupal 7
+hook_node_grants_alter().
+
+****/
+
+
+/**
+ * Implement hook_node_grants_alter().
+ */
+function role_access_extend_node_grants_alter(&$grants, $account, $op) {
+  // We only act on the 'view' operation.
+  // If our grants is not present, do nothing.
+  if ($op != 'view' || !isset($grants['role_access'])) {
+    return;
+  }
+  // Check the permission.
+  $access = user_access('view role access as authenticated user');
+
+  // Get the defined role id for 'authenticated user'.
+  $rid = DRUPAL_AUTHENTICATED_RID;
+
+  // Check authenticated users.
+  if ($account->uid > 0) {
+    // Users with more than one role should have 'authenticated users' removed.
+    if (count($account->roles) > 1 && in_array($rid, $grants['role_access']) && !$access) {
+      // The grants array is in the wrong order, so flip it, unset, and flip back.
+      $grants['role_access'] = array_flip($grants['role_access']);
+      unset($grants['role_access'][$rid]);
+      $grants['role_access'] = array_flip($grants['role_access']);
+    }
+  }
+  // Check anonymous users.
+  else if ($access) {
+    $grants['role_access'][] = $rid;
+  }
+  return;
+}
+
+/****
+ After thinking about the above, we still have a problem. It may be
+ that we do not want to store the records at all. So we have another
+ hook we can use, in conjunction with a new permission.
+****/
+
+/**
+ * Implement hook_node_access_records_alter().
+ *
+ * If a user saves content, make sure that an access record for the
+ * 'authenticated user' role should actually be stored.
+ */
+function role_access_extend_node_access_records_alter(&$grants, $node) {
+  // We cannot use the global $user here; we want the creator/editor of the content.
+  $account = user_load($node->uid);
+
+  // Check the permission.
+  $access = user_access('assign role access as authenticated user', $account);
+  
+  // Get the defined role id for 'authenticated user'.
+  $rid = DRUPAL_AUTHENTICATED_RID;
+
+  // User 1 is sneaky, and might defeat our rule set.
+  if ($account->uid == 1) {
+    $access = FALSE;
+  }
+  // Now add the role.
+  if ($access) {
+    $grants['role_access'][] = array(
+      'realm' => 'role_access',
+      'gid' => $rid,
+      'grant_view' => TRUE,
+      'grant_update' => TRUE,
+      'grant_delete' => TRUE,
+      'priority' => 0,
+    );
+  }
+  // Or take it away.
+  else {
+    foreach ($grants as $key => $grant) {
+      if ($grant['realm'] != 'role_access') {
+        continue;
+      }
+      if ($grant['gid'] == $rid) {
+        unset($grants[$key]);
+      }
+    }
+  }
+}
