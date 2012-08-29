@@ -76,6 +76,13 @@ function menu_magic_basic() {
   $content['theme_data'] = array(
       '#type' => 'markup',
       '#markup' => theme('image', $variables),
+      '#prefix' => '<div class="menu-magic-image">',
+      '#suffix' => '</div>',
+      '#attached' => array(
+        'css' => array(
+            drupal_get_path('module', 'menu_magic'). '/menu_magic.css',
+          ),
+        ),
     );
 
   $content['renderable_element'] = array(
@@ -86,7 +93,13 @@ function menu_magic_basic() {
       t('Second some item'),
       t('Third some item'),
       t('One more some item'),
-      t('And finally some item'),
+      t('The current time is %time.', array('%time' => date('r'))),
+    ),
+    '#cache' => array(
+        'keys' => array('menu_magic', 'renderable_element'), // menu_magic:renderable_element
+        'bin' => 'cache',
+        'expire' => time() + 30,
+        'granularity' => DRUPAL_CACHE_PER_PAGE,
       ),
   );
 
