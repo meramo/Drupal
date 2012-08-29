@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file
+ * Integrates the Treesaver JS Library.
+ */
+
+
+
+/**
+ * Implements hook_menu().
+ */
+
+function treesaver_menu() {
+  $items = array();
+
+  $items['admin/config/treesaver'] = array(
+    'title' => 'Treesaver',
+    'description' => 'Configure treesaver module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('treesaver_settings_form'),
+    'access arguments' => array('configure treesaver module'),
+    'file' => 'includes/treesaver.admin.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_permission().
+ */
+function treesaver_permission() {
+  return array(
+    'configure treesaver module' => array(
+      'title' => 'Configure treesaver module',
+      'description' => 'Configure treesaver module',
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_library().
+ */
+
+function treesaver_library() {
+
+  $libraries['treesaver'] = array(
+    'title' => 'treesaver', 
+    'website' => 'http://treesaverjs.com', 
+    'version' => '0.9.2', 
+    'js' => array(
+      drupal_get_path('module', 'treesaver') . '/treesaver-0.9.2.js' => array(),
+    ),
+  );
+
+  return $libraries;
+}
+
+
+
+/**
+ * Implements hook_init().
+ */
+
+function treesaver_init() {
+		if (variable_get('treesaver_always_add_js')){
+ 			 treesaver_add_library();
+		}
+}
+
+/**
+ * API function
+ */
+
+function treesaver_add_library() {
+    drupal_add_library('treesaver', 'treesaver');
+}

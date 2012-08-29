@@ -1,0 +1,94 @@
+<?php
+
+/**
+ * Implements hook_help().
+ */
+function menu_magic_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#menu_magic':
+      return t("Some help text here.");
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function menu_magic_menu() {
+  $items = array();
+
+  $items['magic'] = array(
+    'title' => 'Some magic',
+    'page callback' => 'menu_magic_basic',
+    'access arguments' => array('access content'),
+    'access callback' => 'user_access', // user_access('access content')
+  );
+
+  $items['magic/%'] = array(
+  'title' => 'Even more magic!',
+  'page callback' => 'menu_magic_extra',
+  'page arguments' => array(1),
+  'access arguments' => array('access content'),
+  'access callback' => 'user_access', // user_access('access content')
+  'file' => 'menu_magic.extra.inc',
+  );
+
+  $items['user/%/magic'] = array(
+  'title' => 'Magic!',
+  'description' => 'Magical magic for users',
+  'page callback' => 'menu_magic_user_tab',
+  'page arguments' => array(1),
+  'access arguments' => array('access content'),
+  'access callback' => 'user_access', // user_access('access content')
+  'file' => 'menu_magic.user.inc',
+  'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['node/%node/magic'] = array( // instead of node_load(%)
+  'title' => 'Magic',
+  'description' => 'Do something interesting',
+  'page callback' => 'menu_magic_node_context',
+  'page arguments' => array(1),
+  'access arguments' => array('access content'),
+  'file' => 'menu_magic.context.inc',
+  'type' => MENU_LOCAL_TASK,
+  'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+
+  return $items;
+}
+
+function menu_magic_basic() {
+  $content = array();
+
+  $content['raw_markup'] = array(
+    '#type' => 'markup',
+    '#markup' => 'Yes, this is magic!',
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+  );
+
+  $variables = array(
+    'path' => 'http://placekitten.com/440/400',
+    'alt' => t('This is magical kitten'),
+    'title' => t('This is the title'),
+    );
+
+  $content['theme_data'] = array(
+      '#type' => 'markup',
+      '#markup' => theme('image', $variables),
+    );
+
+  $content['renderable_element'] = array(
+    '#theme' => 'item_list',
+    '#title' => t('How do we know it\'s magic?'),
+    '#items' => array(
+      t('First some item'),
+      t('Second some item'),
+      t('Third some item'),
+      t('One more some item'),
+      t('And finally some item'),
+      ),
+  );
+
+  return $content;
+}

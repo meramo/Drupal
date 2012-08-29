@@ -1,0 +1,5 @@
+; $Id$
+name = hello javascript
+description = "Some variations of JS."
+core = 7.x
+files[] = hello_js.module

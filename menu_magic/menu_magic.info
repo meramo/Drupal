@@ -1,0 +1,5 @@
+name = Menu Magic
+description = Demonstrates the hook_menu() use
+package = Learn phase
+core = 7.x
+files[] = menu_magic.module

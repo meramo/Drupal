@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function hello_js_menu() {
+  $items = array();
+
+  $items['hello_js/simple_form_example'] = array(
+    'title' => 'Hello World: Simple AJAX Example',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hello_js_simple_form'),
+    'access callback' => TRUE,
+  );
+  $items['hello_js/link'] = array(
+    'title' => 'Hello World: Link',
+    'page callback' => 'hello_js_link',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+  );
+  // Callback URL used for AJAX or when JavaScript is disabled
+  $items['hello_js_link_callback'] = array(
+    'page callback' => 'hello_js_link_response',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+  );
+
+  return $items;
+}
+
+/**
+ * Prepares the form to be put on the page.
+ */
+function hello_js_simple_form($form, &$form_state) {
+  $form = array();
+  $form['hello_city'] = array(
+    '#title' => t("Choose a city"),
+    '#type' => 'select',
+    '#options' => array(
+      'World' => 'World',
+      'Chicago' => 'Chicago',
+      'New York' => 'New York',
+      'Los Angelas' => 'Los Angelas',
+    ),
+    '#ajax' => array(
+      'callback' => 'hello_js_simple_form_callback',
+      'wrapper' => 'ajax_markup_div',
+     ),
+  );
+
+  $form['ajax_markup'] = array(
+    '#prefix' => '<div id="ajax_markup_div">',
+    '#suffix' => '</div>',
+    '#markup' => 'Hello World',
+  );
+  if (!empty($form_state['values']['hello_city'])) {
+    $form['ajax_markup']['#markup'] = t("Hello") .  " {$form_state['values']['hello_city']}";
+  }
+
+  return $form;
+}
+
+function hello_js_simple_form_callback($form, $form_state) {
+  return $form['ajax_markup'];
+}
+
+/**
+ * Use the use-ajax class to apply AJAX.
+ *
+ * @see hello_js_link_response
+ */
+function hello_js_link() {
+  drupal_add_js('misc/ajax.js');
+  $link = l(t('Say Hello'), 'hello_js_link_callback/nojs/', array('attributes' => array('class' => array('use-ajax'))));
+  return '<div>' . $link . '</div><div id="saying-hello"></div>';
+}
+
+/**
+ * Callback for the link example.
+ *
+ * @param $type
+ *   'ajax' or 'nojs. Type is the end element for the callback url. When
+ *   JavaScript is enabled the /nojs/ is replaced with /ajax/ which is
+ *   passed in as the $type.
+ */
+function hello_js_link_response($type = 'ajax') {
+  if ($type == 'ajax') {
+    $output = t("Hello World!");
+    $commands = array();
+    $commands[] = ajax_command_append('#saying-hello', $output);
+    $page = array('#type' => 'ajax_commands', '#ajax_commands' => $commands);
+    ajax_deliver($page);
+  }
+  else {
+    return t("Hello World in a new page.");
+  }
+}
