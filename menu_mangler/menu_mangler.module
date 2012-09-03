@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * Implements hook_page_alter().
+ */
+function menu_mangler_page_alter(&$page) {
+  if (arg(0) == 'magic') {
+    dsm($page);
+    $page['content']['system_main']['renderable_element']['#type'] = 'ol';
+  };
+
+  // Alters user login form text
+  $page['sidebar_first']['user_login']['help'] = array(
+    '#weight' => -10,
+    '#markup' => t('To post comments or add new content, you first have to log in.'),
+    '#suffix' => '<br>',
+  );
+}

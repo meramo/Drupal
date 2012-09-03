@@ -1,0 +1,5 @@
+name = Menu Mangler
+description = Demonstrates some page altering techniques
+package = Learn phase
+core = 7.x
+files[] = menu_mangler.module

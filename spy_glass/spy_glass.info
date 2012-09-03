@@ -1,0 +1,5 @@
+name = Spy glass
+description = Demonstrates how to work with theme functions
+package = Learn phase
+core = 7.x
+files[] = spy_glass.module
