@@ -23,5 +23,14 @@ function form_fun_menu() {
     'weight' => 3,
   );
 
+  $items['form_fun/states'] = array(
+    'title' => "Partners",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_fun_states_form'),
+    'access arguments' => array('access content'),
+    'file' => 'form_fun.states.inc',
+    'weight' => 3,
+  );
+
   return $items;
 }
