@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Implements hook_form_alter().
+ */
+
+function pass_alter_form_alter(&$form, &$form_state, $form_id) {
+  #krumo($form_id);
+  switch ($form_id) {
+    case 'user_profile_form' :
+
+      $form['account']['pass']['#description'] = t('Please, do not use common passwords, please please!');
+    krumo($form);
+    break;
+  }
+}
