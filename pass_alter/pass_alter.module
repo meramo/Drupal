@@ -3,14 +3,34 @@
 /**
  * Implements hook_form_alter().
  */
-
 function pass_alter_form_alter(&$form, &$form_state, $form_id) {
   #krumo($form_id);
   switch ($form_id) {
     case 'user_profile_form' :
-
       $form['account']['pass']['#description'] = t('Please, do not use common passwords, please please!');
-    krumo($form);
+      #krumo($form);
     break;
   }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function pass_alter_form_user_register_form_alter(&$form, &$form_state, $form_id) {
+
+  $form['account']['name']['#description'] = t('Do not use stupid names!');
+  $form['#validate'][] = 'pass_alter_validate_name';
+
+  #krumo($form);
+}
+
+/**
+ * Custom name validation
+ */
+function pass_alter_validate_name($form, &$form_state) {
+  $badnames = array('igor', '123', 'love');
+  if (in_array($form_state['values']['name'], $badnames)) {
+    form_set_error('name', t('I have told you! No Stupid Names!'));
+  }
+  krumo($form_state);
 }
