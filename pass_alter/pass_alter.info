@@ -1,5 +1,5 @@
 name = Password form altering demo
-description = Altering password change form
+description = Altering password change form and name form
 package = Learn phase
 core = 7.x
 files[] = pass_alter.module

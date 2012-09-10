@@ -1,6 +1,23 @@
 <?php
 
 /**
+ * Implements hook_menu()
+ */
+function pass_alter_menu() {
+  $items['admin/config/people/passwords'] = array(
+    'title' => 'Bad passwords list',
+    'description' => t('Configure a list of allowed passwords.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pass_alter_passwords_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'pass-alter-form.admin.inc',
+  );
+
+  return $items;
+}
+
+
+/**
  * Implements hook_form_alter().
  */
 function pass_alter_form_alter(&$form, &$form_state, $form_id) {
@@ -8,6 +25,7 @@ function pass_alter_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
     case 'user_profile_form' :
       $form['account']['pass']['#description'] = t('Please, do not use common passwords, please please!');
+      $form['#validate'][] = 'pass_alter_validate_password';
       #krumo($form);
     break;
   }
@@ -18,19 +36,21 @@ function pass_alter_form_alter(&$form, &$form_state, $form_id) {
  */
 function pass_alter_form_user_register_form_alter(&$form, &$form_state, $form_id) {
 
-  $form['account']['name']['#description'] = t('Do not use stupid names!');
-  $form['#validate'][] = 'pass_alter_validate_name';
+  $form['account']['pass']['#description'] = t('Do not use stupid passes!');
+  $form['#validate'][] = 'pass_alter_validate_password';
 
   #krumo($form);
 }
 
 /**
- * Custom name validation
+ * Custom pass validation
  */
-function pass_alter_validate_name($form, &$form_state) {
-  $badnames = array('igor', '123', 'love');
-  if (in_array($form_state['values']['name'], $badnames)) {
-    form_set_error('name', t('I have told you! No Stupid Names!'));
+function pass_alter_validate_password($form, &$form_state) {
+  $badpasswords = variable_get('pass_alter_badpasswords');
+  $badpasswords_array = explode(', ', $badpasswords);
+  #krumo($badpasswords_array);
+  if (in_array($form_state['values']['pass'], $badpasswords_array)) {
+    form_set_error('pass', t('I have told you! No Stupid Passwords!'));
   }
-  krumo($form_state);
+  #krumo($form_state);
 }
