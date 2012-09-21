@@ -1,0 +1,4 @@
+name = DB Demo
+description = DB ops demo.
+package = Learn phase
+core = 7.x
