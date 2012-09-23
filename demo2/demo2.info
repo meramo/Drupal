@@ -1,0 +1,4 @@
+name = DB Demo 2
+description = Showcasing some more DB manipulation techniques
+package = Learn phase
+core = 7.x

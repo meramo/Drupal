@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * Implements hook_schema()
+ */
+function demo2_schema() {
+  $schema = array();
+
+  $schema['demo2'] = array(
+    'description' => 'Information about node views.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => "The node's {node}.nid.",
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => "The user's {uid}.uid.",
+      ),
+      'view_count' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Simple node view counter per user.',
+      ),
+    ),
+    'primary key' => array('nid', 'uid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_updateN().
+ */
+function demo2_update_7000() {
+  drupal_install_schema('demo2');
+}
