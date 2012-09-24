@@ -7,25 +7,32 @@ function demo2_node_view($node, $view_mode = 'full') {
   //only when looking at the full version, NOT the teaser
   if ($view_mode == 'full') {
 
+    global $user;
     // Everytime a node is viewed, increment the node_views count
-    // in the user's session by one and include the result in the node content
+    // in the demo2 table by one and include the result in the node content
 
-    //make sure there is a record in the session
-    if (empty($_SESSION['node_views'][$node->nid])) {
-      $_SESSION['node_views'][$node->nid] = 0;
+    // Get record
+    $record = demo2_get_record($node->nid, $user->uid);
+
+    // If no record, create one we can insert later
+    if ($record === FALSE) {
+      $record = new StdClass();
+      $record->nid = $node->nid;
+      $record->uid = $user->uid;
+      $record->view_count = 0;
     }
 
-    #krumo('Before: '.$_SESSION['node_views'][$node->nid]);
+    // Increment view_count by 1
+    $record->view_count++;
 
-    //add another to the session
-    $_SESSION['node_views'][$node->nid]++;
+    // Set the record
+    demo2_set_record($record);
 
-    krumo('After: '.$_SESSION['node_views'][$node->nid]);
-
+    krumo($record);
 
     // Set up an array of placeholders to pass to t().
     $t_args = array(
-      '%num' => $_SESSION['node_views'][$node->nid],
+      '%num' => $record->view_count,
     );
 
     $node->content['node_views'] = array(
@@ -33,4 +40,34 @@ function demo2_node_view($node, $view_mode = 'full') {
       '#weight' => 10,
     );
   }
+}
+
+/**
+ * Gets the record
+ */
+function demo2_get_record($nid, $uid) {
+  // SELECT view_count FROM demo2 WHERE nid = $nid & uid = $uid
+  $query = db_select('demo2', 'd')
+    ->fields('d', array('nid', 'uid', 'view_count'))
+    ->condition('nid', $nid)
+    ->condition('uid', $uid);
+  $record = $query->execute()->fetch();
+  return $record;
+}
+
+/**
+ * Saves a record
+ */
+function demo2_set_record($record) {
+  // sanity check
+  if (!is_object($record)) {
+    return watchdog('demo2', 'We could not update the info about node views', array(), WATCHDOG_ERROR);
+  }
+
+  // INSERT/UPDATE into demo2 ('nid', 'uid', 'node_views') VALUES ('nid', 'uid', 'node_views')
+  $query = db_merge('demo2')
+    ->key(array('nid' => $record->nid))
+    ->key(array('uid' => $record->uid))
+    ->fields((array) $record);
+  $query->execute();
 }
