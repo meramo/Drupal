@@ -30,6 +30,13 @@ function demo2_schema() {
         'default' => 0,
         'description' => 'Simple node view counter per user.',
       ),
+        'last_viewed' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The last viewed date {timestamp}',
+      ),
     ),
     'primary key' => array('nid', 'uid'),
   );
@@ -42,4 +49,22 @@ function demo2_schema() {
  */
 function demo2_update_7000() {
   drupal_install_schema('demo2');
+}
+
+/**
+ * Implements hook_updateN().
+ *
+ * Add the last viwed date field.
+ */
+function demo2_update_7001() {
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => "The last viewed date {timestamp}",
+  );
+  db_add_field('demo2', 'last_viewed', $field);
+
+  return t('The last viwed date field was added');
 }
